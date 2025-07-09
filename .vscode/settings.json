@@ -1,0 +1,8 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",        // o el path del intérprete de uv
+  "python.analysis.extraPaths": ["${workspaceFolder}"],
+  "python.analysis.typeCheckingMode": "strict",               // muestra más errores
+  "python.analysis.diagnosticMode": "workspace",              // analiza todo el proyecto
+  "python.analysis.autoImportCompletions": true,
+  "python.languageServer": "Pylance"
+}
