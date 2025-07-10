@@ -1,8 +1,7 @@
 from datetime import datetime
-from models import PropertyDTO, ValuationResponse
+from models import Property, ValuationResponse
 
-
-def estimate_prices(request: PropertyDTO) -> ValuationResponse:
+def estimate_prices(request: Property) -> ValuationResponse: 
     prop = request
 
     base_price = prop.built_area * 2_200
@@ -16,9 +15,9 @@ def estimate_prices(request: PropertyDTO) -> ValuationResponse:
 
     # ✅  Usamos los alias camelCase para contentar a Pylance
     return ValuationResponse(
-        minSalePrice=min_sale,
-        maxSalePrice=max_sale,
-        minRentalPrice=min_rent,
-        maxRentalPrice=max_rent,
-        valuationDate=datetime.now()
+        min_sale_price=min_sale,
+        max_sale_price=max_sale,
+        min_rental_price=min_rent,
+        max_rental_price=max_rent,
+        valuation_date=datetime.now()
     )
