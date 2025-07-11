@@ -28,7 +28,7 @@ class PropertyDTO(BaseModel):
     neighborhood: str
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 
 class UserDTO(BaseModel):
@@ -42,7 +42,7 @@ class UserDTO(BaseModel):
     account_type: str = Field(..., alias="accountType")
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 
 class ValuationRequest(BaseModel):
@@ -58,5 +58,5 @@ class ValuationResponseDTO(BaseModel):
     valuation_date: datetime = Field(..., alias="valuationDate")
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
         populate_by_name = True  # para que la respuesta use los alias si se usa `.model_dump(by_alias=True)`
