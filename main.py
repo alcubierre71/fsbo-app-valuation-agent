@@ -16,7 +16,7 @@ async def estimate_price(requestDto: PropertyDTO):
     
     # Creamos el agente
     agent = Agent()
-    # 👇 Esperamos a la inicialización del agente
+    # Esperamos a la inicialización del agente
     await agent.setup()
 
     # Invocamos al Agente para que calcule la valoracion del inmueble

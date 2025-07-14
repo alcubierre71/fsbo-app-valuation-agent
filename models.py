@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Modelo interno del agente para representar una propiedad
 class Property(BaseModel):
@@ -42,3 +42,15 @@ class GeneratedResponse(BaseModel):
     min_rental_price: float
     max_rental_price: float
     valuation_date: str
+
+# Respuesta del LLM Master
+class MasterOutput(BaseModel):
+    datos_entrada_valid: bool = Field(description="Indica si los datos de entrada estan provisionados o no")
+    worker_task: str = Field(description="Indica que Nodo worker debe realizar la siguiente tarea: el generator o el evaluator")
+
+# Respuesta del LLM Evaluator
+class EvaluatorOutput(BaseModel):
+    feedback: str = Field(description="Feedback on the assistant's response")
+    success_criteria_met: bool = Field(description="Whether the success criteria have been met")
+    user_input_needed: bool = Field(description="True if more input is needed from the user, or clarifications, or the assistant is stuck")
+

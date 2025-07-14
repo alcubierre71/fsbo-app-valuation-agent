@@ -10,6 +10,10 @@ class ValuationState(TypedDict, total=False):
     # Entrada del usuario (PropertyDTO como dict plano)
     request_data: Dict[str, Any]
 
+    # Tarea worker a ejecutar
+    # Tarea del Generator / Tarea del Evaluator
+    worker_task: str 
+
     # Respuesta generada por el modelo generador
     #generated_response: Optional[Dict[str, Any]]
     generated_response: GeneratedResponse

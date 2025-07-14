@@ -13,6 +13,7 @@ class ValuationGraph:
     async def build_graph(self):
 
         nodes = Nodes()
+        await nodes.setup_llm( )
 
         # 1) Crear el builder para nuestro estado
         builder: StateGraph[ValuationState] = StateGraph(ValuationState)
@@ -29,7 +30,7 @@ class ValuationGraph:
         # Conectar master → (generator | evaluator | END) según el router
         builder.add_conditional_edges(                      
             "master",
-            Nodes.master_router,
+            nodes.master_router,
             {
                 "generator": "generator",
                 "evaluator": "evaluator",
