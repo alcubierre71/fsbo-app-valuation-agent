@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langchain.agents import Tool
 from langchain_community.agent_toolkits import FileManagementToolkit
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
-from langchain_experimental.tools import PythonREPLTool
+#from langchain_experimental.tools import PythonREPLTool
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper 
 import wikipedia   # type: ignore
@@ -56,6 +56,9 @@ async def other_tools():
     wiki_api = WikipediaAPIWrapper(wiki_client=wikipedia)
     wiki_tool = WikipediaQueryRun(api_wrapper=wiki_api)
 
-    python_repl = PythonREPLTool()
+    #python_repl = PythonREPLTool()
     
-    return file_tools + [tool_search, python_repl,  wiki_tool]
+    #tools_total = file_tools + [tool_search, python_repl,  wiki_tool]
+    tools_total = file_tools + [tool_search, wiki_tool]
+
+    return tools_total

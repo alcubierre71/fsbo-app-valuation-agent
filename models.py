@@ -50,7 +50,12 @@ class MasterOutput(BaseModel):
 
 # Respuesta del LLM Evaluator
 class EvaluatorOutput(BaseModel):
-    feedback: str = Field(description="Feedback on the assistant's response")
+    evaluation_feedback: str = Field(description="Feedback on the generator's response")
     success_criteria_met: bool = Field(description="Whether the success criteria have been met")
-    user_input_needed: bool = Field(description="True if more input is needed from the user, or clarifications, or the assistant is stuck")
+    #user_input_needed: bool = Field(description="True if more input is needed from the user, or clarifications, or the assistant is stuck")
 
+# Respuesta del LLM Generator
+class GeneratorOutput(BaseModel):
+    valuation_ok: bool = Field(description="Indica si se ha podido realizar la valoracion del inmueble con los datos proporcionados")
+    valuation_feedback: str = Field(description="Comentarios acerca de la valoracion realizada")
+    valuation_generated: GeneratedResponse = Field(description="Se indican los datos de la valoracion del inmueble realizada")
