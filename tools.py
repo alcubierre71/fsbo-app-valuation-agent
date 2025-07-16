@@ -1,13 +1,15 @@
 
+from typing import List
 from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
 from dotenv import load_dotenv
 from langchain.agents import Tool
 from langchain_community.agent_toolkits import FileManagementToolkit
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
-#from langchain_experimental.tools import PythonREPLTool
+from langchain_experimental.tools import PythonREPLTool
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper 
 import wikipedia   # type: ignore
+from langchain_core.tools.base import BaseTool
 
 from playwright.async_api import async_playwright
 
@@ -28,7 +30,7 @@ async def playwright_tools():
 #    return "success"
 
 
-def get_file_tools():
+def get_file_tools() -> List[BaseTool]:
     toolkit = FileManagementToolkit(root_dir="sandbox")
     return toolkit.get_tools()
 
@@ -56,9 +58,9 @@ async def other_tools():
     wiki_api = WikipediaAPIWrapper(wiki_client=wikipedia)
     wiki_tool = WikipediaQueryRun(api_wrapper=wiki_api)
 
-    #python_repl = PythonREPLTool()
+    python_repl = PythonREPLTool()
     
-    #tools_total = file_tools + [tool_search, python_repl,  wiki_tool]
-    tools_total = file_tools + [tool_search, wiki_tool]
+    tools_total = file_tools + [tool_search, python_repl,  wiki_tool]
+    #tools_total = file_tools + [tool_search, wiki_tool]
 
     return tools_total

@@ -134,6 +134,11 @@ class LlmModels:
             valuation_date   = datetime.now().isoformat(),
         )
 
+        Dispones de muchas herramientas que te ayudan, incluyendo herramientas para navegar por internet y acceder a paginas web.
+        Tienes una herramienta para ejecutar codigo Python, pero ten en cuenta que deberas incluir una sentencia print() si deseas recibir la salida.
+        * Importante: repito, para ejecutar codigo Python, debes incluir una sentencia print() al final para recuperar la salida.
+        Si no incluyes la sentencia print(), el codigo Python te devolvera datos vacios.
+
         Fecha y hora actuales: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
         Debes responder indicando si has podido realizar la valoracion o no y el resultado de dicha valoracion. 
@@ -146,14 +151,21 @@ class LlmModels:
         * valuation_generated: Se indican los datos de la valoracion del inmueble realizada 
           (min_sale_price, max_sale_price, min_rental_price, max_rental_price, valuation_date)
 
-        La respuesta debe ser en formato
+        La respuesta debe ser en formato JSON. Contesta unicamente con la estructura del JSON siguiente 
+        y no incorpores comentarios adicionales fuera de lo que es la estructura del JSON.
 
         ```json
         {{
         "valuation_ok": [valuation_ok],
-        "evaluation_feedback": [evaluation_feedback],
-        "valuation_generated": [valuation_generated]
-        }}  
+        "valuation_feedback": [valuation_feedback],
+        "valuation_generated": {{
+            "min_sale_price": [min_sale_price],
+            "max_sale_price": [max_sale_price],
+            "min_rental_price": [min_rental_price],
+            "max_rental_price": [max_rental_price],
+            "valuation_date": [valuation_date]
+        }}
+        }}
 
        """
 

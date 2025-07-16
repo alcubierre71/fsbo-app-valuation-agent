@@ -4,5 +4,12 @@
   "python.analysis.typeCheckingMode": "strict",               // muestra más errores
   "python.analysis.diagnosticMode": "workspace",              // analiza todo el proyecto
   "python.analysis.autoImportCompletions": true,
-  "python.languageServer": "Pylance"
+  "python.languageServer": "Pylance",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnusedVariable": "warning",
+    "reportUnusedImport": "warning",
+    "reportUnknownMemberType": "warning",
+    "reportUnknownVariableType": "warning",
+    "reportUnknownArgumentType": "warning"
+  }
 }

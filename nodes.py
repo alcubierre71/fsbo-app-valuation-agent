@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 from llm_models import LlmModels
@@ -7,6 +8,8 @@ from models import EvaluatorOutput, GeneratedResponse, GeneratorOutput, MasterOu
 from tools import other_tools
 from langchain_openai import ChatOpenAI
 from models import MasterOutput
+from langgraph.prebuilt import ToolNode
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 class Nodes:
 
@@ -18,9 +21,9 @@ class Nodes:
     # Setup para realizar la construccion asincrona del Nodes 
     async def setup_llm(self):   
         self.tools = await other_tools()
-        generator_llm = ChatOpenAI(model="gpt-4o-mini")
-        #self.generator_llm_total = generator_llm.bind_tools(self.tools)   # type: ignore
-        self.generator_llm_total = generator_llm.with_structured_output(GeneratorOutput) # type: ignore
+        generator_llm = ChatOpenAI(model="gpt-4o-mini")   # type: ignore 
+        self.generator_llm_total = generator_llm.bind_tools(self.tools)    # type: ignore 
+        #self.generator_llm_total = generator_llm.with_structured_output(GeneratorOutput) # type: ignore   
         # Creamos Modelo Evaluator
         evaluator_llm = ChatOpenAI(model="gpt-4o-mini")
         #self.evaluator_llm_with_output = evaluator_llm.with_structured_output(EvaluatorOutput)
@@ -79,7 +82,7 @@ class Nodes:
 
         return state_response
 
-
+    # Router del nodo Master
     def master_router(self, state: ValuationState) -> str:               # <- router
 
         response = "generator"
@@ -87,7 +90,8 @@ class Nodes:
         if state.get("is_valid"):
             return "end"
         
-        if state.get("attempts", 0) >= state.get("max_attempts", 5):
+        # Limite de ejecuciones en bucle indefinido 
+        if state.get("attempts", 0) >= state.get("max_attempts", 3):
             return "end"
         
         #if "generated_response" in state:
@@ -112,41 +116,93 @@ class Nodes:
 
         prompt_generator : str = self.models_llm.llm_generator()
 
-        messages: List[Any] = []        
+        #messages: List[Any] = []        
 
         datos_inmueble : Dict[str, Any] | None = state.get("request_data")
 
-        valuation = GeneratedResponse(
-            min_sale_price   = 0,
-            max_sale_price   = 0,
-            min_rental_price = 0,
-            max_rental_price = 0,
-            valuation_date   = "",
-        )
+        valuation = GeneratedResponse(min_sale_price = 0, max_sale_price = 0, min_rental_price = 0, max_rental_price = 0, valuation_date   = "")
 
         prompt_generator = prompt_generator + f""" \n* Te indico los datos del inmueble request_data enviados por el Usuario: {datos_inmueble} """
 
+        # Recuperamos los mensajes del state antes de enviarlos al LLM
+        # Esto es importante hacerlo porque pueden venir mensajes de las Tools
+        found_system_message = False
+        messages = state["messages"]   # type: ignore
 
-        messages.append(prompt_generator)
+        for message in messages:
+            if isinstance(message, SystemMessage):
+                message.content = prompt_generator
+                found_system_message = True
+        
+        # Preparamos el prompt del Generator junto con los mensajes del State
+        if not found_system_message:
+            messages = [SystemMessage(content=prompt_generator)] + messages
+
+        print("messages_input_generator: ", messages)
+
+        #messages.append(prompt_generator)
 
         #sys_msg = SystemMessage(content=messages)
 
         # Invocamos al Modelo Generator
-        response : GeneratorOutput = self.generator_llm_total.invoke(messages)   # type: ignore[assignment]
+        #response : GeneratorOutput = self.generator_llm_total.invoke(messages)   # type: ignore[assignment]
+        response_msg : BaseMessage = self.generator_llm_total.invoke(messages)   # type: ignore[assignment]
+
+        # Paso 1: Extraer el contenido
+        content_str: str = response_msg.content  # type: ignore
+
+        print("content_str: ", content_str)
+
+        if "```json" in content_str:
+            # Paso 2: Eliminar delimitadores ```json ... ```
+            if content_str.strip().startswith("```json"):
+                content_str = content_str.strip()[7:-3].strip()
+
+            # Paso 3: Parsear como JSON
+            content_json = json.loads(content_str)
+
+            print("content_json: ", content_json)
+             
+            # Paso 4: Convertir a GeneratorOutput (esto valida y deserializa)
+            generator_output = GeneratorOutput(**content_json)
+
+            # Paso 5: Extraer la valoración generada
+            valuation = generator_output.valuation_generated
+        else:
+            print("⚠️ No se encontró el bloque ```json en el mensaje.")
 
         # Si el calculo se ha podido realizar, recogemos la valoracion del inmueble
-        if response.valuation_ok:
-            valuation = response.valuation_generated
+        #if response.valuation_ok:
+        #    valuation = response.valuation_generated
 
         # Actualizamos el estado inicial añadiendo el atributo generated_response
         state_response: ValuationState = {
             **state,
             "generated_response": valuation,
             "attempts": state.get("attempts", 0) + 1,
-            "is_valid": None   # queda pendiente ser auditado por el Evaluator 
+            "is_valid": None,   # queda pendiente ser auditado por el Evaluator 
+            "messages": [response_msg]
         }
 
         return state_response
+
+    # ToolNode con las Tools disponibles para el nodo Generator 
+    def generator_toolnode(self, state: ValuationState) -> ToolNode:
+
+        tool_node = ToolNode(tools=self.tools)
+
+        return tool_node 
+
+    # Router del nodo Generator
+    def generator_router(self, state: ValuationState) -> str:
+        last_message = state["messages"][-1]   # type: ignore[assignment]
+        
+        # Si el ultimo mensaje tiene tool_calls, se devuelve "tools"
+        # "tool_calls" es un mensaje estandar de tipo AIMessage devuelto por el LLM
+        if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+            return "gentools"
+        else:
+            return "master"
 
     # ----------------------------------------------------------------------
     # --- Evaluator --------------------------------------------------------
