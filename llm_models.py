@@ -72,19 +72,44 @@ class LlmModels:
 
         El objetivo es asegurar que la valoración es coherente, razonable, útil y basada adecuadamente en los datos del inmueble proporcionados. 
 
-        Debes revisar:
+        A continuación tienes los precios medios por metro cuadrado según Idealista para los barrios de Madrid:
 
-        1. Si los precios estimados (venta y alquiler) son consistentes con las características del inmueble.
-        2. Si la valoración evita exageraciones, imprecisiones o respuestas vagas.
-        3. Si hay errores evidentes, contradicciones o señales de que el Generador ha fallado.
-        4. Si los precios minimos realmente son inferiores a los precios maximos
-        5. Si los precios minimos son exageradamente bajos. Por ejemplo, el precio minimo de venta no puede ser 
-           inferior a 20.000 euros y el precio minimo de alquiler no puede ser inferior a 100 euros.
-        6. Si el formato de salida es claro, completo y profesional.
+        VENTA €/m²:
+        - Chueca-Justicia: 9091
+        - Huertas-Cortes: 7603
+        - Lavapiés-Embajadores: 5787
+        - Malasaña-Universidad: 7681
+        - Palacio: 6818
+        - Sol: 7627
+
+        ALQUILER €/m²:
+        - Chueca-Justicia: 28
+        - Huertas-Cortes: 26
+        - Lavapiés-Embajadores: 25
+        - Malasaña-Universidad: 26
+        - Palacio: 23
+        - Sol: 25
+
+        Reglas para validar:
+
+        1. Los precios **estimados totales** (venta y alquiler) deben calcularse en base a los €/m² del barrio y la superficie del inmueble.
+        - Rango permitido de **venta total** = (precio €/m² barrio * superficie) * [0.9, 1.1]
+        - Rango permitido de **alquiler total** = (precio €/m² barrio * superficie) * [0.9, 1.1]
+        2. Verifica que:
+        - El precio mínimo de venta < precio máximo de venta.
+        - El precio mínimo de alquiler < precio máximo de alquiler.
+        - No hay exageraciones (venta < 20.000 € o alquiler < 100 €).
+        - La valoración es coherente, útil y clara.
+        3. No rehagas la valoración ni inventes datos. Solo valida lo que ya está generado.
+        4. Sé razonable. Acepta pequeñas desviaciones si los precios están cercanos al rango.
 
         Fecha y hora actuales: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-        Debes responder **solo** de una de las siguientes dos formas:
+
+
+        ### INSTRUCCIONES DE SALIDA
+
+        Debes responder **solo** con uno de los siguientes JSON, sin explicaciones adicionales:
 
         - Si la valoración es correcta y puede ser enviada al usuario final, responde con:
 
@@ -121,16 +146,16 @@ class LlmModels:
 
         1. Se obtienen los datos de la propiedad del request_data de entrada
         2. Se extrae el area mediante el builtArea de la propiedad
-        3. Se calcula el base_price multiplicando el area por el valor 2.800
-        4. Se calcula la variation dividiendo el base_price entre 10
+        3. Se calcula el base_price multiplicando el area por el valor 7.600
+        4. Se calcula la variation dividiendo el base_price entre 50
         
         La salida se calcula del siguiente modo:
 
         generated_response = GeneratedResponse(
             min_sale_price   = base_price - variation,
             max_sale_price   = base_price + variation,
-            min_rental_price = base_price * 0.003,
-            max_rental_price = base_price * 0.004,
+            min_rental_price = base_price * 0.0034,
+            max_rental_price = base_price * 0.0036,
             valuation_date   = datetime.now().isoformat(),
         )
 
@@ -151,8 +176,11 @@ class LlmModels:
         * valuation_generated: Se indican los datos de la valoracion del inmueble realizada 
           (min_sale_price, max_sale_price, min_rental_price, max_rental_price, valuation_date)
 
+        ### INSTRUCCIONES DE SALIDA
+
         La respuesta debe ser en formato JSON. Contesta unicamente con la estructura del JSON siguiente 
         y no incorpores comentarios adicionales fuera de lo que es la estructura del JSON.
+        Importante: Repito, no incoropres comentarios adicionales fuera de la estructura del JSON.
 
         ```json
         {{

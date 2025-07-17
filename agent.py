@@ -76,7 +76,7 @@ class Agent:
             evaluation_feedback=None,
             is_valid=None,
             attempts=0,
-            max_attempts=3,
+            max_attempts=5,
             request_id=self.agent_id,
             timestamp=datetime.now()
         )

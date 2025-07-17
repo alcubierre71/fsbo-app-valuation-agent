@@ -9,7 +9,7 @@ from tools import other_tools
 from langchain_openai import ChatOpenAI
 from models import MasterOutput
 from langgraph.prebuilt import ToolNode
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 class Nodes:
 
@@ -25,7 +25,7 @@ class Nodes:
         self.generator_llm_total = generator_llm.bind_tools(self.tools)    # type: ignore 
         #self.generator_llm_total = generator_llm.with_structured_output(GeneratorOutput) # type: ignore   
         # Creamos Modelo Evaluator
-        evaluator_llm = ChatOpenAI(model="gpt-4o-mini")
+        evaluator_llm = ChatOpenAI(model="gpt-4.1-nano")
         #self.evaluator_llm_with_output = evaluator_llm.with_structured_output(EvaluatorOutput)
         self.evaluator_llm_total = evaluator_llm.with_structured_output(EvaluatorOutput) # type: ignore
         # Creamos el Modelo Master
@@ -91,7 +91,7 @@ class Nodes:
             return "end"
         
         # Limite de ejecuciones en bucle indefinido 
-        if state.get("attempts", 0) >= state.get("max_attempts", 3):
+        if state.get("attempts", 0) >= state.get("max_attempts", 5):
             return "end"
         
         #if "generated_response" in state:
@@ -127,12 +127,21 @@ class Nodes:
         # Recuperamos los mensajes del state antes de enviarlos al LLM
         # Esto es importante hacerlo porque pueden venir mensajes de las Tools
         found_system_message = False
+        found_tool_message = False
+        found_ai_message = False
         messages = state["messages"]   # type: ignore
 
+        # Quizas habria que quitar los mensajes de tipo ToolMessage, porque si hay resultados de Tools anteriores, el
+        # Generator se cree que son utiles y no vuelven a lanzar nuevas Tools 
+        # Quizas habria que quitarlos y no enviarlos al Modelo LLM 
         for message in messages:
             if isinstance(message, SystemMessage):
                 message.content = prompt_generator
                 found_system_message = True
+            if isinstance(message, ToolMessage):
+                found_tool_message = True 
+            if isinstance(message, AIMessage):
+                found_ai_message = True 
         
         # Preparamos el prompt del Generator junto con los mensajes del State
         if not found_system_message:
